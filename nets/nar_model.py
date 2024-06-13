@@ -172,68 +172,72 @@ class NARModel(nn.Module):
             cost: Tour length for shortest out of `beam_size` candidate tours
         """
         batch_size, num_nodes, _ = nodes.shape
+        
+
 
         # Compute logits
         logits, log_p = self._inner(nodes, graph)
+
+
         
-        # Perform beamsearch
-        with torch.no_grad():
-            _log_p = log_p.clone().detach()[:, :, :, 1]
-            _log_p[_log_p == 0] = -1e-10  # Set 0s (i.e. log(1)s) to very small negative number
+        # # Perform beamsearch
+        # with torch.no_grad():
+        #     _log_p = log_p.clone().detach()[:, :, :, 1]
+        #     _log_p[_log_p == 0] = -1e-10  # Set 0s (i.e. log(1)s) to very small negative number
             
-            beamsearch = Beamsearch(beam_size, batch_size, num_nodes, device=_log_p.device, decode_type=self.decode_type)
-            trans_probs = _log_p.gather(1, beamsearch.get_current_state().long())
-            for step in range(num_nodes - 1):
-                beamsearch.advance(trans_probs)
-                trans_probs = _log_p.gather(1, beamsearch.get_current_state().long())
+        #     beamsearch = Beamsearch(beam_size, batch_size, num_nodes, device=_log_p.device, decode_type=self.decode_type)
+        #     trans_probs = _log_p.gather(1, beamsearch.get_current_state().long())
+        #     for step in range(num_nodes - 1):
+        #         beamsearch.advance(trans_probs)
+        #         trans_probs = _log_p.gather(1, beamsearch.get_current_state().long())
 
-            # Find TSP tour with highest probability among beam_size candidates
-            ends = torch.zeros(batch_size, 1, device=_log_p.device)
-            pi = beamsearch.get_hypothesis(ends)
+        #     # Find TSP tour with highest probability among beam_size candidates
+        #     ends = torch.zeros(batch_size, 1, device=_log_p.device)
+        #     pi = beamsearch.get_hypothesis(ends)
             
-            if beam_size == 1:
-                # Compute tour costs
-                cost, _ = self.problem.get_costs(nodes, pi)
+        #     if beam_size == 1:
+        #         # Compute tour costs
+        #         cost, _ = self.problem.get_costs(nodes, pi)
 
-            elif beam_size > 1:
-                # Beam search
-                sequences = []
-                costs = []
-                ids = []
+        #     elif beam_size > 1:
+        #         # Beam search
+        #         sequences = []
+        #         costs = []
+        #         ids = []
                 
-                # Iterate over all positions in beam
-                for pos in range(0, beam_size):
-                    ends = pos * torch.ones(batch_size, 1, device=_log_p.device)  # New positions
+        #         # Iterate over all positions in beam
+        #         for pos in range(0, beam_size):
+        #             ends = pos * torch.ones(batch_size, 1, device=_log_p.device)  # New positions
                     
-                    try:
-                        pi_temp = beamsearch.get_hypothesis(ends)
-                        cost_temp, _ = self.problem.get_costs(nodes, pi_temp)
-                        cost_temp, pi_temp = cost_temp.cpu().numpy(), pi_temp.cpu().numpy()
+        #             try:
+        #                 pi_temp = beamsearch.get_hypothesis(ends)
+        #                 cost_temp, _ = self.problem.get_costs(nodes, pi_temp)
+        #                 cost_temp, pi_temp = cost_temp.cpu().numpy(), pi_temp.cpu().numpy()
                         
-                        sequences.append(pi_temp)
-                        costs.append(cost_temp)
-                        ids.append(list(range(batch_size)))
+        #                 sequences.append(pi_temp)
+        #                 costs.append(cost_temp)
+        #                 ids.append(list(range(batch_size)))
 
-                    except AssertionError:
-                        # Handles error if the temporary solution is an invalid tour
-                        continue
+        #             except AssertionError:
+        #                 # Handles error if the temporary solution is an invalid tour
+        #                 continue
                     
-                sequences = np.array(sequences)
-                costs = np.array(costs)
-                ids = np.array(ids)
+        #         sequences = np.array(sequences)
+        #         costs = np.array(costs)
+        #         ids = np.array(ids)
 
-                # Reshape/permute sequences, costs, ids
-                valid_beam, batch_size, num_nodes = sequences.shape
-                sequences = sequences.reshape(valid_beam * batch_size, num_nodes)
-                s_idx = []
-                for i in range(batch_size):
-                    for j in range(valid_beam):
-                        s_idx.append(i + j * batch_size)
+        #         # Reshape/permute sequences, costs, ids
+        #         valid_beam, batch_size, num_nodes = sequences.shape
+        #         sequences = sequences.reshape(valid_beam * batch_size, num_nodes)
+        #         s_idx = []
+        #         for i in range(batch_size):
+        #             for j in range(valid_beam):
+        #                 s_idx.append(i + j * batch_size)
                 
-                # Get sequences and costs of shortest tours
-                pi, cost = get_best(sequences[s_idx], costs.T.flatten(), ids.T.flatten())
+        #         # Get sequences and costs of shortest tours
+        #         pi, cost = get_best(sequences[s_idx], costs.T.flatten(), ids.T.flatten())
 
-        return logits, log_p, pi, cost
+        # return logits, log_p, pi, cost
 
     def greedy_search(self, nodes, graph):
         return self.beam_search(nodes, graph, beam_size=1)

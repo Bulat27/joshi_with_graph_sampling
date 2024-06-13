@@ -91,6 +91,8 @@ def load_model(path, epoch=None, extra_logging=False):
     from nets.encoders.gat_encoder import GraphAttentionEncoder
     from nets.encoders.gnn_encoder import GNNEncoder
     from nets.encoders.mlp_encoder import MLPEncoder
+
+    print(f"Path:{path}")
     
     if os.path.isfile(path):
         model_filename = path
@@ -102,7 +104,10 @@ def load_model(path, epoch=None, extra_logging=False):
                 for filename in os.listdir(path)
                 if os.path.splitext(filename)[1] == '.pt'
             )
-        model_filename = os.path.join(path, 'epoch-{}.pt'.format(epoch))
+        # model_filename = os.path.join(path, 'epoch-{}.pt'.format(epoch))
+        model_filename = path + '/epoch-{}.pt'.format(epoch)
+
+        print("IT GOES IN HERE!!!!")
     else:
         assert False, "{} is not a valid directory or file".format(path)
 
