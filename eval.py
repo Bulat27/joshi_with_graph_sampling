@@ -191,8 +191,8 @@ def multiprocess_write(sub_prob, meshgrid, omega, node_num = 20, tsplib_name = '
 
 
 def _eval_dataset(model, dataset, decode_strategy, width, softmax_temp, opts, device):
-    # model.to(device)
-    # model.eval()
+    model.to(device)
+    model.eval()
 
     model.set_decode_type(
         "greedy" if decode_strategy in ('bs', 'greedy') else "sampling",
