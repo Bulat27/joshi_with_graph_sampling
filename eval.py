@@ -333,32 +333,32 @@ def _eval_dataset(model, dataset, decode_strategy, width, softmax_temp, opts, de
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("datasets", nargs='*', default=['data/tsp/tsp100_test_concorde.txt'], 
+    parser.add_argument("datasets", nargs='+', 
                         help="Filename of the dataset(s) to evaluate")
-    parser.add_argument("-f", action='store_true',
+    parser.add_argument("-f", action='store_true', 
                         help="Set true to overwrite")
     parser.add_argument("-o", default=None, 
                         help="Name of the results file to write")
-    parser.add_argument('--val_size', type=int, default=10000,
+    parser.add_argument('--val_size', type=int, default=12800,
                         help='Number of instances used for reporting validation performance')
     parser.add_argument('--offset', type=int, default=0,
                         help='Offset where to start in dataset (default 0)')
-    parser.add_argument('--batch_size', type=int, default=250,
+    parser.add_argument('--batch_size', type=int, default=128,
                         help="Batch size to use during (baseline) evaluation")
-    parser.add_argument('--decode_strategies', type=str, nargs='+', default=['bs'],
+    parser.add_argument('--decode_strategies', type=str, nargs='+',
                         help='Beam search (bs), Sampling (sample) or Greedy (greedy)')
-    parser.add_argument('--widths', type=int, nargs='+', default=[128],
+    parser.add_argument('--widths', type=int, nargs='+',
                         help='Sizes of beam to use for beam search (or number of samples for sampling), '
                              '0 to disable (default), -1 for infinite')
     parser.add_argument('--softmax_temperature', type=parse_softmax_temperature, default=1,
                         help="Softmax temperature (sampling or bs)")
-    parser.add_argument('--model', type=str, default='pretrained/tspsl_20-20/sl-nar-var-20pnn-gnn-max_20240531T151637',
+    parser.add_argument('--model', type=str,
                         help="Path to model checkpoints directory")
     parser.add_argument('--no_cuda', action='store_true', 
                         help='Disable CUDA')
     parser.add_argument('--no_progress_bar', action='store_true', 
                         help='Disable progress bar')
-    parser.add_argument('--compress_mask', action='store_true',
+    parser.add_argument('--compress_mask', action='store_true', 
                         help='Compress mask into long')
     parser.add_argument('--max_calc_batch_size', type=int, default=10000, 
                         help='Size for subbatches')
@@ -369,7 +369,6 @@ if __name__ == "__main__":
     parser.add_argument('--num_workers', type=int, default=0,
                         help='Number of workers for DataLoaders')
     parser.add_argument('--seed', type=int, default=1234, help='Random seed to use')
-    
 
     opts = parser.parse_args()
 
