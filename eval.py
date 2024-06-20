@@ -134,7 +134,9 @@ def test_one_tsp(coor, pre_edges, node_num, cluster_center, top_k, top_k_expand)
         mesh = np.meshgrid(cluster_center_neighbor, cluster_center_neighbor)
 
         meshs.append(mesh)
-        Omega[mesh] += 1
+
+        Omega[mesh[0], mesh[1]] += 1
+        # Omega[mesh] += 1
 
         num_clusters+=1
 
